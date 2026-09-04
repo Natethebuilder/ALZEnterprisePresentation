@@ -1,0 +1,282 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Microsoft design system tokens.
+ *
+ * Colour values are the official Microsoft brand / Fluent 2 ramps:
+ *   Communication blue #0078D4, Azure navy #243A5E, Azure light #50E6FF,
+ *   Fluent neutral grey ramp, and the Fluent semantic trio
+ *   (#107C10 success, #FFB900 warning, #D13438 error).
+ *
+ * Everything is stored as bare HSL channels so Tailwind can compose them
+ * with opacity modifiers, and so the 3D city scene can read the exact same
+ * palette out of the DOM instead of hardcoding hex.
+ */
+
+@layer base {
+  :root {
+    /* === Microsoft brand === */
+    --ms-blue: 206 100% 42%;          /* #0078D4 Communication blue */
+    --ms-blue-shade: 206 100% 31%;    /* #005A9E */
+    --ms-blue-dark: 206 100% 24%;     /* #004578 */
+    --ms-navy: 217 45% 25%;           /* #243A5E Azure navy */
+    --ms-cyan: 189 100% 66%;          /* #50E6FF Azure light */
+
+    /* Microsoft logo squares */
+    --ms-logo-red: 14 89% 54%;        /* #F25022 */
+    --ms-logo-green: 78 100% 36%;     /* #7FBA00 */
+    --ms-logo-blue: 199 100% 47%;     /* #00A4EF */
+    --ms-logo-yellow: 44 100% 50%;    /* #FFB900 */
+
+    /* === Slide palette (what the deck actually consumes) === */
+    --slide-primary: 217 45% 25%;         /* Azure navy   */
+    --slide-primary-light: 206 100% 31%;  /* Blue shade   */
+    --slide-accent: 206 100% 42%;         /* MS blue      */
+    --slide-accent-light: 189 100% 66%;   /* Azure cyan   */
+    --slide-accent-muted: 206 100% 95%;   /* Blue tint bg */
+
+    --slide-success: 120 77% 27%;     /* #107C10 */
+    --slide-warning: 44 100% 50%;     /* #FFB900 */
+    --slide-error: 358 63% 51%;       /* #D13438 */
+
+    /* Fluent neutral ramp */
+    --slide-gray-100: 30 8% 95%;      /* #F3F2F1 */
+    --slide-gray-200: 30 10% 92%;     /* #EDEBE9 */
+    --slide-gray-300: 30 6% 87%;      /* #E1DFDD */
+    --slide-gray-400: 30 4% 78%;      /* #C8C6C4 */
+    --slide-gray-500: 30 2% 62%;      /* #A19F9D */
+    --slide-gray-600: 30 2% 37%;      /* #605E5C */
+    --slide-gray-700: 30 3% 27%;      /* #484644 */
+    --slide-gray-800: 30 2% 19%;      /* #323130 */
+    --slide-gray-900: 30 3% 12%;      /* #201F1E */
+
+    /* === App chrome === */
+    --background: 0 0% 100%;
+    --foreground: 30 3% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 30 3% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 3% 12%;
+    --primary: 206 100% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 8% 95%;
+    --secondary-foreground: 30 3% 12%;
+    --muted: 30 8% 95%;
+    --muted-foreground: 30 2% 37%;
+    --accent: 206 100% 95%;
+    --accent-foreground: 217 45% 25%;
+    --destructive: 358 63% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 10% 92%;
+    --input: 30 10% 92%;
+    --ring: 206 100% 42%;
+    --radius: 0.25rem;
+
+    --sidebar-background: 217 45% 25%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 206 100% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 40% 32%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 40% 30%;
+    --sidebar-ring: 206 100% 42%;
+
+    --canvas-bg: 30 8% 95%;
+    --slide-bg: 0 0% 100%;
+    --grid-line: 30 10% 92%;
+    --comment-pin: 44 100% 50%;
+    --comment-pin-resolved: 120 77% 27%;
+  }
+
+  .dark {
+    --background: 30 3% 12%;
+    --foreground: 30 8% 95%;
+    --card: 30 2% 19%;
+    --card-foreground: 30 8% 95%;
+    --popover: 30 2% 19%;
+    --popover-foreground: 30 8% 95%;
+    --primary: 199 100% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 3% 27%;
+    --secondary-foreground: 30 8% 95%;
+    --muted: 30 3% 27%;
+    --muted-foreground: 30 2% 62%;
+    --accent: 217 40% 32%;
+    --accent-foreground: 30 8% 95%;
+    --destructive: 358 63% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 3% 27%;
+    --input: 30 3% 27%;
+    --ring: 199 100% 47%;
+
+    --sidebar-background: 30 3% 9%;
+    --sidebar-foreground: 30 8% 95%;
+    --sidebar-primary: 199 100% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 3% 22%;
+    --sidebar-accent-foreground: 30 8% 95%;
+    --sidebar-border: 30 3% 18%;
+    --sidebar-ring: 199 100% 47%;
+
+    --canvas-bg: 30 3% 9%;
+    --slide-bg: 30 2% 19%;
+    --grid-line: 30 3% 27%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Segoe UI on Windows; Inter (loaded in index.html) elsewhere. */
+    font-family: 'Segoe UI Variable Text', 'Segoe UI', Inter, system-ui,
+      -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+/* === Slide-specific utilities === */
+@layer components {
+  .type-metric {
+    @apply text-5xl font-semibold tabular-nums;
+  }
+
+  .type-mono {
+    font-family: 'Cascadia Mono', 'Cascadia Code', Consolas, 'SF Mono', ui-monospace, monospace;
+  }
+
+  .slide-card {
+    @apply p-6 rounded bg-white border border-slide-gray-200;
+  }
+
+  .slide-card-accent {
+    @apply slide-card border-l-4 border-l-slide-accent;
+  }
+
+  .slide-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
+    background: hsl(var(--slide-accent-muted));
+    color: hsl(var(--slide-primary));
+  }
+
+  .slide-divider {
+    @apply w-16 h-1 rounded-full;
+    background: hsl(var(--slide-accent));
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/40;
+}
+
+.slide-canvas {
+  aspect-ratio: 16 / 9;
+  background: hsl(var(--slide-bg));
+}
+
+/* === Slide font scaling ===
+   Slides author at 1920x1080 and are transform-scaled to fit, so type is
+   pinned to absolute pixel sizes here rather than inheriting the app's rem
+   scale. Applies only inside .slide-content. */
+.slide-content .text-xs { font-size: 20px !important; line-height: 1.5 !important; }
+.slide-content .text-sm { font-size: 20px !important; line-height: 1.5 !important; }
+.slide-content .text-base { font-size: 20px !important; line-height: 1.6 !important; }
+.slide-content .text-lg { font-size: 22px !important; line-height: 1.6 !important; }
+.slide-content .text-xl { font-size: 24px !important; line-height: 1.5 !important; }
+.slide-content .text-2xl { font-size: 28px !important; line-height: 1.4 !important; }
+.slide-content .text-3xl { font-size: 36px !important; line-height: 1.35 !important; }
+.slide-content .text-4xl { font-size: 44px !important; line-height: 1.25 !important; }
+.slide-content .text-5xl { font-size: 56px !important; line-height: 1.2 !important; }
+.slide-content .text-6xl { font-size: 72px !important; line-height: 1.1 !important; }
+.slide-content .text-7xl { font-size: 88px !important; line-height: 1.05 !important; }
+.slide-content .text-8xl { font-size: 112px !important; line-height: 1 !important; }
+.slide-content .text-9xl { font-size: 144px !important; line-height: 1 !important; }
+
+/* Grid overlay */
+.grid-overlay {
+  background-image:
+    linear-gradient(to right, hsl(var(--grid-line)) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--grid-line)) 1px, transparent 1px);
+  background-size: calc(100% / 6) calc(100% / 6);
+}
+
+.slide-thumbnail {
+  @apply transition-all duration-200;
+}
+
+.slide-thumbnail:hover {
+  @apply ring-2 ring-primary/50;
+}
+
+.slide-thumbnail.active {
+  @apply ring-2 ring-primary;
+}
+
+.comment-pin {
+  @apply w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer transition-transform;
+  background: hsl(var(--comment-pin));
+  color: white;
+}
+
+.comment-pin:hover {
+  @apply scale-110;
+}
+
+.comment-pin.resolved {
+  background: hsl(var(--comment-pin-resolved));
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes collapseIn {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-20px) scale(0.8); }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
+.animate-scale-in { animation: scaleIn 0.2s ease-out; }
+.animate-collapse { animation: collapseIn 0.2s ease-out forwards; }
+
+/* Respect reduced-motion for the deck's reveal animations. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .animate-collapse {
+    animation: none !important;
+  }
+}
