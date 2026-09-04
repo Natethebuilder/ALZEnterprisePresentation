@@ -1,4 +1,4 @@
-# Azure Landing Zones — interactive deck
+# Azure Landing Zones - interactive deck
 
 A 23-slide presentation explaining Azure landing zones to a mixed room: hierarchy,
 connectivity, identity and governance, with an interactive 3D city walkthrough of
