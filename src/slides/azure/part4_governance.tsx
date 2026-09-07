@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  AZSlide, Kicker, Title, Lead, Body, Box, Chip, Legend, SectionDivider,
+  AZSlide, Kicker, Title, Lead, Body, Box, Chip, SectionDivider,
 } from './components';
 import type { Tone } from './components';
 import {
@@ -43,7 +43,7 @@ const EFFECTS: PolicyEffect[] = [
     what: 'The deployment fails. The resource never exists.',
     example: 'Nothing may be created outside North Europe or West Europe.',
     rule: 'allowedLocations · [northeurope, westeurope] · effect: Deny',
-    when: 'For the rules that are genuinely non-negotiable: data residency, public exposure, unencrypted storage. Start narrow: an over-broad deny is how a platform team becomes the bottleneck.',
+    when: 'For validated, non-negotiable controls such as approved regions or prohibited public access. Roll out safely, because a broad deny can block legitimate delivery.',
   },
   {
     key: 'audit',
@@ -53,7 +53,7 @@ const EFFECTS: PolicyEffect[] = [
     what: 'The resource is created, and recorded as non-compliant.',
     example: 'Flag every resource missing a CostCentre tag.',
     rule: 'requiredTag · CostCentre · effect: Audit',
-    when: 'Always the first step when rolling out a new rule. Audit for a month, see how much of the estate would have broken, then decide whether to promote it to Deny.',
+    when: 'A common first step for a new rule. Measure impact, resolve false positives and agree exceptions before increasing enforcement.',
   },
   {
     key: 'modify',
@@ -63,17 +63,17 @@ const EFFECTS: PolicyEffect[] = [
     what: 'The resource is corrected on the way in.',
     example: 'Inherit the resource group’s CostCentre tag onto anything created in it.',
     rule: 'modify · addOrReplace tag from parent RG',
-    when: 'For anything where the right answer is knowable without asking a human. Tag inheritance is the classic case, and it fixes most tagging compliance overnight.',
+    when: 'For supported properties or tags where the correct value is deterministic. Existing resources need a remediation task.',
   },
   {
     key: 'dine',
     label: 'DeployIfNotExists',
     tone: 'cloud',
     icon: <Server className="w-6 h-6" />,
-    what: 'A missing companion resource is deployed automatically.',
+    what: 'A related resource can be deployed when the condition is not met.',
     example: 'Every new VM gets diagnostic settings pointed at the central workspace.',
     rule: 'deployIfNotExists · diagnosticSettings → Log Analytics',
-    when: 'For platform obligations app teams should not have to remember. It is also the effect most likely to surprise people, so document what it will do before you switch it on.',
+    when: 'For repeatable platform obligations such as diagnostics. The assignment needs a managed identity and existing resources need remediation.',
   },
 ];
 
@@ -154,8 +154,8 @@ export function S17Policy() {
         </div>
 
         <p className="mt-4 text-lg text-slide-gray-600">
-          Policy is preventive rather than corrective: the misconfiguration you never
-          created is the one you never have to explain.
+          Policy can prevent, audit, modify or deploy. Deny is immediate; Modify and
+          DeployIfNotExists can also correct existing resources through remediation tasks.
         </p>
       </Body>
     </AZSlide>
@@ -166,30 +166,20 @@ export function S17Policy() {
 
 export function S18Ownership() {
   const rows = [
-    { area: 'Management group structure', central: 'R', app: 'I' },
-    { area: 'Policies and guardrails', central: 'R', app: 'C' },
-    { area: 'Hub network, firewall, DNS', central: 'R', app: 'I' },
-    { area: 'Identity, PIM, baseline roles', central: 'R', app: 'C' },
-    { area: 'Workload resources', central: 'C', app: 'R' },
-    { area: 'RBAC inside the workload', central: 'A', app: 'R' },
-    { area: 'Subscription cost', central: 'A', app: 'R' },
+    { area: 'Management groups and policy', central: 'Own', app: 'Consult', centralTone: 'navy', appTone: 'cloud' },
+    { area: 'Shared connectivity and DNS', central: 'Own', app: 'Consume', centralTone: 'navy', appTone: 'muted' },
+    { area: 'Subscription product and vending', central: 'Own', app: 'Request', centralTone: 'navy', appTone: 'light' },
+    { area: 'Workload resources and data', central: 'Guardrail', app: 'Own', centralTone: 'cloud', appTone: 'navy' },
+    { area: 'Workload access', central: 'Baseline', app: 'Own', centralTone: 'cloud', appTone: 'navy' },
+    { area: 'Workload cost and operations', central: 'Enable', app: 'Own', centralTone: 'light', appTone: 'navy' },
+    { area: 'Incident response', central: 'Shared', app: 'Shared', centralTone: 'warning', appTone: 'warning' },
   ];
-
-  const legendItems: { tone: Tone; label: string }[] = [
-    { tone: 'navy', label: 'R, Responsible' },
-    { tone: 'cloud', label: 'C, Consulted' },
-    { tone: 'light', label: 'A, Accountable' },
-    { tone: 'muted', label: 'I, Informed' },
-  ];
-
-  const cellTone = (v: string): Tone =>
-    ({ R: 'navy', C: 'cloud', A: 'light', I: 'muted' }[v] as Tone);
 
   return (
     <AZSlide index={18} kicker="Ownership">
       <Body>
         <Kicker>Central guardrails, local freedom</Kicker>
-        <Title>The platform owns the city. Teams own their buildings.</Title>
+        <Title>A clear service contract makes autonomy safe.</Title>
 
         <div className="mt-5 flex-1 grid grid-cols-[1fr_1.15fr] gap-8">
           {/* Who owns what */}
@@ -200,9 +190,9 @@ export function S18Ownership() {
               </Chip>
               <div className="flex flex-col gap-2.5">
                 <Box tone="cloud" compact icon={<Layers className="w-5 h-5" />} label="The management group tree" />
-                <Box tone="cloud" compact icon={<Scale className="w-5 h-5" />} label="Policy, and the exception process" />
-                <Box tone="cloud" compact icon={<MapPin className="w-5 h-5" />} label="Hub network, firewall, DNS, gateways" />
-                <Box tone="cloud" compact icon={<Users className="w-5 h-5" />} label="Identity, PIM, and the baseline roles" />
+                <Box tone="cloud" compact icon={<Scale className="w-5 h-5" />} label="Policy and the exception lifecycle" />
+                <Box tone="cloud" compact icon={<MapPin className="w-5 h-5" />} label="Shared network, DNS and gateways" />
+                <Box tone="cloud" compact icon={<Users className="w-5 h-5" />} label="Identity standards and platform roles" />
               </div>
             </div>
 
@@ -211,15 +201,15 @@ export function S18Ownership() {
                 <Server className="w-5 h-5" /> Application teams
               </Chip>
               <div className="flex flex-col gap-2.5">
-                <Box tone="light" compact icon={<Server className="w-5 h-5" />} label="Everything inside their own subscription" />
-                <Box tone="light" compact icon={<Coins className="w-5 h-5" />} label="Their budget, and the spend against it" />
-                <Box tone="light" compact icon={<CheckCircle2 className="w-5 h-5" />} label="Access to their own workload" />
-                <Box tone="light" compact icon={<ShieldCheck className="w-5 h-5" />} label="Running and monitoring the app" />
+                <Box tone="light" compact icon={<Server className="w-5 h-5" />} label="End-to-end workload lifecycle" />
+                <Box tone="light" compact icon={<Coins className="w-5 h-5" />} label="Workload budget and cost decisions" />
+                <Box tone="light" compact icon={<CheckCircle2 className="w-5 h-5" />} label="Workload access and data ownership" />
+                <Box tone="light" compact icon={<ShieldCheck className="w-5 h-5" />} label="Application security, monitoring and recovery" />
               </div>
             </div>
           </div>
 
-          {/* RACI */}
+          {/* Decision-rights contract */}
           <div className="flex flex-col">
             <div className="rounded border-2 border-slide-gray-200 overflow-hidden">
               <div className="grid grid-cols-[1.7fr_1fr_1fr] bg-slide-primary text-white">
@@ -236,22 +226,18 @@ export function S18Ownership() {
                 >
                   <div className="px-6 py-2.5 text-xl text-slide-gray-800">{r.area}</div>
                   <div className="px-6 py-2.5 text-center">
-                    <Chip tone={cellTone(r.central)} className="!px-4 !py-1 !text-lg">{r.central}</Chip>
+                    <Chip tone={r.centralTone as Tone} className="!px-4 !py-1 !text-lg">{r.central}</Chip>
                   </div>
                   <div className="px-6 py-2.5 text-center">
-                    <Chip tone={cellTone(r.app)} className="!px-4 !py-1 !text-lg">{r.app}</Chip>
+                    <Chip tone={r.appTone as Tone} className="!px-4 !py-1 !text-lg">{r.app}</Chip>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-5">
-              <Legend items={legendItems} />
-            </div>
-
-            <p className="mt-auto pt-4 text-lg text-slide-gray-600 leading-snug">
-              The line is not "central does the important things". The platform owns anything
-              shared between teams; teams own everything that is only theirs.
+            <p className="mt-5 text-lg text-slide-gray-600 leading-snug">
+              This is a starting contract, not a universal RACI. Name one accountable owner,
+              the supported interface and the escalation path for every shared capability.
             </p>
           </div>
         </div>
@@ -286,7 +272,7 @@ export function S19OperatingModel() {
       points: [
         'Every team invents its own network and its own rules',
         'No consistent security posture, and no cost control',
-        'Central has no visibility, so it cannot govern anything',
+        'Central visibility is fragmented, so governance becomes reactive',
         'It works fine at three teams and falls apart at thirty',
       ],
     },
@@ -296,10 +282,10 @@ export function S19OperatingModel() {
       icon: <CheckCircle2 className="w-5 h-5" />,
       heading: 'A platform team runs the city; app teams build on it',
       points: [
-        'The platform team owns policy, network, identity and subscription vending',
+        'The platform team owns guardrails, shared services and subscription vending',
         'App teams self-serve into an environment that is already governed',
         'Guardrails are a hard floor, not a review meeting',
-        'Both safety and speed go up, which is the whole argument for doing this',
+        'The goal is safe autonomy without a manual gate for routine delivery',
       ],
     },
   };
@@ -333,18 +319,22 @@ export function S19OperatingModel() {
         </div>
 
         {/* The spectrum */}
-        <div className="mt-8 relative h-14">
-          <div className="absolute inset-x-0 top-6 h-2 rounded-full bg-gradient-to-r from-[hsl(var(--slide-error))] via-[hsl(var(--slide-warning))] to-[hsl(var(--slide-success))]" />
+        <div className="mt-6">
+          <div className="flex items-center justify-between text-base text-slide-gray-600">
+            <span>Total control</span>
+            <span>No control</span>
+            <span>Guardrails + self-service</span>
+          </div>
+          <div className="relative h-8 mt-1">
+          <div className="absolute inset-x-0 top-3 h-2 rounded-full bg-gradient-to-r from-[hsl(var(--slide-error))] via-[hsl(var(--slide-warning))] to-[hsl(var(--slide-success))]" />
           <div
-            className="absolute top-2 w-10 h-10 rounded-full border-4 border-white bg-slide-primary shadow-lg transition-all duration-500"
-            style={{ left: mode === 'frozen' ? '0%' : mode === 'lawless' ? '48%' : 'calc(100% - 40px)' }}
+            className="absolute top-0 w-8 h-8 rounded-full border-4 border-white bg-slide-primary shadow-lg transition-all duration-500"
+            style={{ left: mode === 'frozen' ? '0%' : mode === 'lawless' ? '48%' : 'calc(100% - 32px)' }}
           />
-          <span className="absolute left-0 top-[52px] text-lg text-slide-gray-600">Total control</span>
-          <span className="absolute left-[46%] top-[52px] text-lg text-slide-gray-600">No control</span>
-          <span className="absolute right-0 top-[52px] text-lg text-slide-gray-600">Guardrails + self-service</span>
+          </div>
         </div>
 
-        <div className="mt-12 flex-1 grid grid-cols-[1.1fr_1fr] gap-8">
+        <div className="mt-4 flex-1 grid grid-cols-[1.1fr_1fr] gap-8">
           <div
             className={`rounded border-2 p-7 flex flex-col transition-colors duration-300 ${
               mode === 'target'
@@ -380,14 +370,20 @@ export function S19OperatingModel() {
               label="Azure Landing Zone"
               sub="Governed, connected, pre-wired environments, available on request"
             />
+            <Box
+              tone="light"
+              icon={<Users className="w-6 h-6" />}
+              label="Enabling teams"
+              sub="Close specialist skill gaps without taking workload ownership"
+            />
             <div className="grid grid-cols-2 gap-3">
               {['Payments', 'SAP', 'HR', 'Ecommerce'].map((a) => (
                 <Box key={a} tone="light" compact icon={<Users className="w-5 h-5" />} label={`${a} team`} />
               ))}
             </div>
             <p className="text-xl text-slide-gray-600 leading-snug mt-1">
-              The platform is a product, and the application teams are its customers. If they
-              route around it, that is a product problem, not a compliance problem.
+              Treat the platform as a product and workload teams as customers. Workarounds
+              are a signal to investigate usability, lead time or a missing product line.
             </p>
           </div>
         </div>

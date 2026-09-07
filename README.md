@@ -1,11 +1,11 @@
-# Azure Landing Zones - interactive deck
+# Azure Landing Zones: interactive deck
 
 A 23-slide presentation explaining Azure landing zones to a mixed room: hierarchy,
 connectivity, identity and governance, with an interactive 3D city walkthrough of
 network traffic at its centre.
 
-Every concept is introduced twice — once as part of a city you already know how to
-read, once in Azure terms — so a non-technical stakeholder can follow the whole arc
+Every concept is introduced twice: once as part of a city you already know how to
+read, once in Azure terms, so a non-technical stakeholder can follow the whole arc
 while an architect still gets the mechanism.
 
 ---
@@ -56,31 +56,31 @@ expected to click.
 | # | Slide | |
 | ---: | --- | --- |
 | 1 | Title | |
-| 2 | How to read this deck | |
-| 3 | Azure is a city — the metaphor map | ★ filter by section |
+| 2 | Platform and application landing zones | |
+| 3 | Azure is a city: the metaphor map | ★ filter by section |
 | 4 | § Where things live | |
-| 5 | The hierarchy — five nested containers | ★ open each tier |
+| 5 | The hierarchy: five nested containers | ★ open each tier |
 | 6 | § How they communicate | |
 | 7 | VNet & subnets | |
 | 8 | NSG vs Azure Firewall | |
 | 9 | Routes & DNS | |
-| 10 | Hub and spoke | ★ with / without a landing zone |
-| 11 | **City walkthrough (3D)** | ★ step a packet hop by hop |
+| 10 | Enterprise topology | ★ compare traditional hub and spoke with Virtual WAN |
+| 11 | **City walkthrough (3D)** | ★ step through connection decisions |
 | 12 | § Who controls what | |
 | 13 | Entra ID & managed identities | |
 | 14 | RBAC & scope inheritance | ★ pick a scope |
 | 15 | RBAC vs Policy | |
 | 16 | § Governance & operations | |
 | 17 | Azure Policy effects | ★ pick an effect |
-| 18 | Who owns what (RACI) | |
+| 18 | Ownership contract | |
 | 19 | Operating model | ★ three positions on the spectrum |
 | 20 | Roadmap & maturity | ★ phases / maturity |
 | 21 | Discovery questions | |
 | 22 | Five things to remember | |
 | 23 | Closing | |
 
-Each slide makes exactly one point. Where two ideas only make sense together —
-NSG and firewall, routes and DNS, policy effects and their examples — they share
+Each slide makes exactly one point. Where two ideas only make sense together,
+NSG and firewall, routes and DNS, policy effects and their examples, they share
 a slide rather than repeating each other across two.
 
 ---
@@ -117,7 +117,7 @@ Then register it:
 `index` on `AZSlide` is the number printed in the footer. Keep it in step with the
 array order, and with `TOTAL_SLIDES` in `components.tsx`.
 
-### Shared building blocks — `src/slides/azure/components.tsx`
+### Shared building blocks: `src/slides/azure/components.tsx`
 
 | Export | Use |
 | --- | --- |
@@ -139,7 +139,7 @@ Slides are authored at a fixed **1920 × 1080** and transform-scaled to fit by
 size so nothing depends on the viewport.
 
 `useIsLiveSlide()` matters more than it looks: the sidebar and the overview grid
-mount every slide at once. Anything expensive — WebGL above all — must be gated
+mount every slide at once. Anything expensive, WebGL above all, must be gated
 behind it, or twenty canvases start at the same time.
 
 ---
@@ -148,27 +148,27 @@ behind it, or twenty canvases start at the same time.
 
 `src/slides/azure/interactive_city.tsx` + `src/slides/azure/city3d/`
 
-A packet travels through a real low-poly city model while the panel explains each
-hop in both plain language and Azure terms.
+A connection trace travels through a real low-poly city model while the panel
+explains each decision in both plain language and Azure terms.
 
 ### How it is put together
 
 ```
 interactive_city.tsx     Slide: scenario picker, step controls, hop copy
 city3d/CityScene.tsx     react-three-fiber scene
-city3d/scenarios.ts      Node layout + the four scenarios and their hops
+city3d/scenarios.ts      Node layout + the five scenarios and their decisions
 city3d/tokens.ts         Reads the deck's CSS colour tokens into the scene
 ```
 
-The city itself is the uploaded model and nothing else — there is no procedural
+The city itself is the uploaded model and nothing else. There is no procedural
 geometry standing in for buildings, roads or districts. Azure concepts are drawn
 as a deliberate overlay above it:
 
-- **Markers** — a ground ring, a vertical beam and a floating label, one per node.
+- **Markers**: a ground ring, a vertical beam and a floating label, one per node.
   Only the nodes belonging to the active scenario are drawn.
-- **Route** — one arced tube per leg. Flown legs are navy, the leg in progress is
+- **Route**: one arced tube per leg. Flown legs are navy, the leg in progress is
   Microsoft blue, legs still ahead are faint grey, a denied leg is red.
-- **Packet** — `ms-packet.glb`, carried along the current leg.
+- **Packet**: `ms-packet.glb`, carried along traffic legs. DNS lookup uses a separate dotted signal.
 
 ### Stepping
 
@@ -178,7 +178,7 @@ re-renders React. Presenters can step with the buttons, `Space` / `Backspace`, t
 numbered stepper, or by clicking a marker in the city.
 
 The camera eases to frame the active hop, and hands control back to the presenter
-the moment they drag — until the next step.
+the moment they drag, until the next step.
 
 ### Fitting the model
 
@@ -195,7 +195,7 @@ Add an entry to `SCENARIOS` in `city3d/scenarios.ts`. Each hop names a node from
 `NODES` and carries four strings: `title`, `plain` (the city), `azure` (what is
 actually happening) and `control` (the concrete rule, shown as code). Set
 `status: 'deny'` to colour that hop and its leg red. The scene and the panel both
-follow from the data — no component changes needed.
+follow from the data, with no component changes needed.
 
 ---
 
@@ -218,9 +218,9 @@ Microsoft brand colours and Fluent neutrals, defined once as HSL channels in
 
 | Token | Value | |
 | --- | --- | --- |
-| `--ms-blue` | `#0078D4` | Communication blue — the accent |
-| `--ms-navy` | `#243A5E` | Azure navy — dark surfaces |
-| `--ms-cyan` | `#50E6FF` | Azure light — accents on dark |
+| `--ms-blue` | `#0078D4` | Communication blue, the accent |
+| `--ms-navy` | `#243A5E` | Azure navy, dark surfaces |
+| `--ms-cyan` | `#50E6FF` | Azure light, accents on dark |
 | `--slide-gray-*` | Fluent ramp | `#F3F2F1` → `#201F1E` |
 | `--slide-success` / `-warning` / `-error` | `#107C10` / `#FFB900` / `#D13438` | Fluent semantics |
 | `--ms-logo-*` | `#F25022` `#7FBA00` `#00A4EF` `#FFB900` | The four logo squares |
@@ -229,7 +229,7 @@ Type is Segoe UI, with Inter (loaded in `index.html`) as the cross-platform
 fallback and Cascadia Mono for code.
 
 The 3D scene reads these same tokens out of the DOM through
-`city3d/tokens.ts` — there are no hardcoded colours in the WebGL layer, so a
+`city3d/tokens.ts`. There are no hardcoded colours in the WebGL layer, so a
 palette change follows through to the city automatically.
 
 ---
@@ -255,7 +255,7 @@ src/
   pages/               Index (editor), AudienceWindow, NotFound
   slides/azure/        The deck
     components.tsx     Shared slide system
-    index.ts           The deck order — start here
+    index.ts           The deck order, start here
     part1…part5        Slide groups
     interactive_city   The 3D walkthrough
     city3d/            Scene, scenarios, colour tokens

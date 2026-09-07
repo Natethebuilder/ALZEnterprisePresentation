@@ -13,43 +13,43 @@ const PHASES = [
   {
     n: '1',
     t: 'Discover & align',
-    d: 'Agree the operating model, ownership, naming and taxonomy before anything is built.',
+    d: 'Define outcomes, constraints, owners and design decisions with the right stakeholders.',
     icon: <ClipboardList className="w-6 h-6" />,
-    out: 'A written answer to "who owns what" that both sides recognise.',
+    out: 'A decision log, target architecture and service contract that the accountable owners accept.',
   },
   {
     n: '2',
-    t: 'Platform foundation',
-    d: 'Tenant, the management group tree, baseline policy, identity and PIM.',
+    t: 'Deploy a code baseline',
+    d: 'Use an accelerator where it fits, then configure hierarchy, policy, access and shared services.',
     icon: <Scale className="w-6 h-6" />,
-    out: 'A governed empty estate. Nothing runs here yet, and that is fine.',
+    out: 'The platform can be recreated, reviewed, tested and changed through a controlled pipeline.',
   },
   {
     n: '3',
-    t: 'Connectivity hub',
-    d: 'Hub VNet, Azure Firewall, private DNS, the gateway, and the first spoke.',
+    t: 'Pilot one workload',
+    d: 'Exercise networking, DNS, identity, policy, observability, recovery and support end to end.',
     icon: <Server className="w-6 h-6" />,
-    out: 'One real workload reaching production through the hub.',
+    out: 'One representative workload passes deployment, traffic, access and incident-response tests.',
   },
   {
     n: '4',
-    t: 'Landing zones',
-    d: 'Subscription vending: pre-wired, pre-governed environments per domain.',
+    t: 'Productise vending',
+    d: 'Offer fit-for-purpose subscription products with automated defaults and clear interfaces.',
     icon: <CheckCircle2 className="w-6 h-6" />,
-    out: 'A team gets an environment without a ticket, and without a meeting.',
+    out: 'A workload team can request the right environment and receive it with predictable lead time.',
   },
   {
     n: '5',
     t: 'Operate & iterate',
     d: 'Self-service through IaC, cost and security baselines, policy as an ongoing product.',
     icon: <Sparkles className="w-6 h-6" />,
-    out: 'Compliance drift is visible, and shrinking, without anyone auditing by hand.',
+    out: 'The platform has owners, service levels, feedback loops, upgrade paths and a tested exception process.',
   },
 ];
 
 const MATURITY = [
   { n: '0', t: 'Ad hoc', d: 'Each team fends for itself. No shared network, no shared rules.', tone: 'error' as Tone },
-  { n: '1', t: 'Foundational', d: 'First policies, one hub, basic identity, still largely manual.', tone: 'warning' as Tone },
+  { n: '1', t: 'Foundational', d: 'Baseline policy, access and observability exist, but work is still largely manual.', tone: 'warning' as Tone },
   { n: '2', t: 'Standardised', d: 'Repeatable landing zones, policy sets, an RBAC baseline.', tone: 'cloud' as Tone },
   { n: '3', t: 'Automated', d: 'Self-service provisioning through governed IaC pipelines.', tone: 'cloud' as Tone },
   { n: '4', t: 'Optimised', d: 'Continuous governance; cost and security managed as code.', tone: 'success' as Tone },
@@ -82,7 +82,7 @@ export function S20Roadmap() {
           <div className="flex gap-2 pb-2">
             {[
               { k: 'phases' as const, l: 'Delivery phases' },
-              { k: 'maturity' as const, l: 'Maturity today' },
+              { k: 'maturity' as const, l: 'Workshop diagnostic' },
             ].map((o) => (
               <button
                 key={o.k}
@@ -146,13 +146,16 @@ export function S20Roadmap() {
             </div>
 
             <p className="mt-auto pt-6 text-xl text-slide-gray-600">
-              Foundation before connectivity; connectivity before landing zones; landing zones
-              before scale. Each phase is independently useful, which is what keeps funding alive.
+              Treat this as an iterative product rollout. The design areas affect one another,
+              and the pilot should change the backlog before broad adoption.
             </p>
           </div>
         ) : (
-          <div className="mt-8 flex-1 flex flex-col justify-center">
-            <div className="grid grid-cols-5 gap-4">
+          <div className="mt-6 flex-1 flex flex-col">
+            <p className="mb-3 text-lg text-slide-gray-600">
+              A practical conversation aid, not an official Microsoft maturity model.
+            </p>
+            <div className="grid grid-cols-5 gap-3">
               {MATURITY.map((l) => (
                 <div key={l.n} className="flex flex-col">
                   <div className="rounded-t-sm bg-slide-primary text-white text-center py-3">
@@ -160,7 +163,7 @@ export function S20Roadmap() {
                       Level {l.n}
                     </div>
                   </div>
-                  <div className={`rounded-b-sm border-2 border-t-0 p-5 flex flex-col gap-2 h-full ${toneBg(l.tone)}`}>
+                  <div className={`rounded-b-sm border-2 border-t-0 p-4 flex flex-col gap-1.5 h-full ${toneBg(l.tone)}`}>
                     <div className="text-2xl font-semibold">{l.t}</div>
                     <div className="text-lg text-slide-gray-600 leading-snug">{l.d}</div>
                   </div>
@@ -168,34 +171,34 @@ export function S20Roadmap() {
               ))}
             </div>
 
-            <div className="mt-10 grid grid-cols-3 gap-6">
-              <div className="rounded border-2 border-[hsl(var(--slide-success)/0.5)] p-6">
-                <Chip tone="success" className="mb-3">
+            <div className="mt-6 grid grid-cols-3 gap-5">
+              <div className="rounded border-2 border-[hsl(var(--slide-success)/0.5)] p-5">
+                <Chip tone="success" className="mb-2">
                   <CheckCircle2 className="w-5 h-5" /> Worth it because
                 </Chip>
-                <ul className="text-xl text-slide-gray-700 leading-snug space-y-2">
+                <ul className="text-lg text-slide-gray-700 leading-snug space-y-1.5">
                   <li>Environments are consistent and governed</li>
                   <li>Security is a default, not a request</li>
                   <li>App teams move faster, not slower</li>
                   <li>Cost and drift are finally visible</li>
                 </ul>
               </div>
-              <div className="rounded border-2 border-[hsl(var(--slide-warning)/0.55)] p-6">
-                <Chip tone="warning" className="mb-3">
+              <div className="rounded border-2 border-[hsl(var(--slide-warning)/0.55)] p-5">
+                <Chip tone="warning" className="mb-2">
                   <AlertTriangle className="w-5 h-5" /> Costs you
                 </Chip>
-                <ul className="text-xl text-slide-gray-700 leading-snug space-y-2">
+                <ul className="text-lg text-slide-gray-700 leading-snug space-y-1.5">
                   <li>Real platform investment before any payback</li>
                   <li>A central team that can become a bottleneck</li>
                   <li>Policy sprawl, if nobody curates it</li>
                   <li>A cultural shift towards trust plus guardrails</li>
                 </ul>
               </div>
-              <div className="rounded border-2 border-[hsl(var(--slide-error)/0.45)] p-6">
-                <Chip tone="error" className="mb-3">
+              <div className="rounded border-2 border-[hsl(var(--slide-error)/0.45)] p-5">
+                <Chip tone="error" className="mb-2">
                   <Target className="w-5 h-5" /> Watch for
                 </Chip>
-                <ul className="text-xl text-slide-gray-700 leading-snug space-y-2">
+                <ul className="text-lg text-slide-gray-700 leading-snug space-y-1.5">
                   <li>Over-governance quietly killing adoption</li>
                   <li>Under-governance quietly creating shadow IT</li>
                   <li>A management group tree that is hard to undo</li>
@@ -214,13 +217,14 @@ export function S20Roadmap() {
 
 export function S21Discovery() {
   const questions = [
-    { q: 'Who owns governance versus day-2 operations today, and where does the hand-off break?', r: 'Exposes whether an operating model exists at all.' },
-    { q: 'How does a new workload get network, identity and budget today? How long does that take?', r: 'The number is usually the strongest argument for the whole programme.' },
-    { q: 'Which regulations constrain where data and resources may live?', r: 'Decides region policy, and often the management group shape.' },
-    { q: 'Can one team’s mistake affect another team today?', r: 'Tells you how urgently subscriptions need to become real boundaries.' },
-    { q: 'Where is egress inspected and logged, and who actually reads it?', r: 'Separates a firewall that exists from a firewall that is doing something.' },
-    { q: 'How do applications authenticate to data services? Are there secrets stored anywhere?', r: 'Managed identity adoption is usually the fastest visible win.' },
-    { q: 'Can you attribute cloud spend to a cost centre right now?', r: 'If not, tagging policy pays for itself before anything else does.' },
+    { q: 'Which business outcomes, deadlines and risks must the platform improve?', r: 'Creates measurable success criteria instead of an architecture exercise.' },
+    { q: 'Who owns the platform, shared services and day-2 workload operations?', r: 'Exposes gaps in accountability and support.' },
+    { q: 'How does a workload get a subscription, network, identity and budget today?', r: 'Reveals lead time, approvals and likely shadow paths.' },
+    { q: 'Which regions, branches and address ranges must connect, and where is there overlap?', r: 'Sets the boundary for IP planning and hybrid topology.' },
+    { q: 'Which flows need central inspection, and which may connect directly?', r: 'Shapes ingress, egress, hybrid and cross-workload routing.' },
+    { q: 'How do applications authenticate to data services, and where are secrets stored?', r: 'Identifies managed identity and data-role opportunities.' },
+    { q: 'What telemetry proves a route, policy or access decision during an incident?', r: 'Tests whether the control is observable, not merely deployed.' },
+    { q: 'How are cost, policy exceptions and platform changes reviewed over time?', r: 'Tests whether the operating model can survive day 2.' },
   ];
 
   return (
@@ -229,7 +233,7 @@ export function S21Discovery() {
         <Kicker>Questions before architecture</Kicker>
         <Title>The right design depends entirely on the answers.</Title>
         <Lead className="mt-4">
-          These seven expose ownership gaps, manual bottlenecks and real risk appetite.
+          These eight expose ownership gaps, manual bottlenecks and the real risk appetite.
         </Lead>
 
         <div className="mt-5 flex-1 grid grid-cols-2 gap-x-8 gap-y-2.5 content-center">
@@ -264,8 +268,8 @@ export function S22FiveThings() {
       d: 'It is how ownership, guardrails and self-service actually work. The architecture is downstream of that.',
     },
     {
-      t: 'Management groups govern; subscriptions bound',
-      d: 'Rules live on the tree above. Cost, limits and blast radius stop at the subscription fence.',
+      t: 'Management groups scale policy; subscriptions create boundaries',
+      d: 'Use the hierarchy for common governance and subscriptions for workload ownership, access, cost and many service limits.',
     },
     {
       t: 'RBAC is who; Policy is what',
@@ -273,7 +277,7 @@ export function S22FiveThings() {
     },
     {
       t: 'Troubleshoot in a fixed order',
-      d: 'DNS → route → security (NSG, then firewall) → destination → return path → identity. Almost every incident is one of those six.',
+      d: 'Check DNS, effective routes, security decisions, the destination listener, the return path, then data-plane identity.',
     },
     {
       t: 'Central guardrails, local autonomy',
@@ -341,7 +345,7 @@ export function S23Closing() {
           </div>
           <ArrowRight />
           <div className="rounded border-2 border-white/30 px-6 py-4 text-white">
-            <div className="text-xl font-semibold">Governed environment, same day</div>
+            <div className="text-xl font-semibold">Governed environment, predictable lead time</div>
           </div>
         </div>
 

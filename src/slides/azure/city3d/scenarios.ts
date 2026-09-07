@@ -6,6 +6,7 @@ export type NodeKind =
   | 'firewall'
   | 'dns'
   | 'gateway'
+  | 'waf'
   | 'onprem'
   | 'internet'
   | 'data';
@@ -46,7 +47,7 @@ export const NODES: Record<string, CityNode> = {
   dns: {
     id: 'dns',
     label: 'Address book',
-    azure: 'Private DNS zone',
+    azure: 'Azure Private DNS / resolver',
     pos: [0, 0, -19],
     kind: 'dns',
   },
@@ -67,7 +68,7 @@ export const NODES: Record<string, CityNode> = {
   dataB: {
     id: 'dataB',
     label: 'Data vault',
-    azure: 'Spoke B · SQL private endpoint',
+    azure: 'Spoke B · SQL workload',
     pos: [21, 0, -9],
     kind: 'data',
   },
@@ -92,10 +93,21 @@ export const NODES: Record<string, CityNode> = {
     pos: [22, 0, 17],
     kind: 'internet',
   },
+  appGateway: {
+    id: 'appGateway',
+    label: 'Web checkpoint',
+    azure: 'Application Gateway WAF · Workload',
+    pos: [-18, 0, 4],
+    kind: 'waf',
+  },
 };
 
 export interface Hop {
   node: string;
+  /** Optional source node for this decision. It prevents lookup steps becoming data-path hops. */
+  from?: string;
+  /** DNS lookup is a preflight action, not part of the application payload path. */
+  flow?: 'traffic' | 'lookup';
   title: string;
   /** The city metaphor, for a non-technical audience. */
   plain: string;
@@ -118,54 +130,57 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'east-west',
     label: 'App → database',
-    summary: 'East-west: two spokes talk only by going through the hub.',
+    summary: 'Traditional hub: explicit routes send traffic through central inspection.',
     hops: [
       {
         node: 'appA',
         title: 'Leaving the building',
         plain: 'The app needs the database that lives on the other side of the city.',
-        azure: 'Source is a workload in the Spoke A app subnet.',
-        control: 'Spoke A VNet · 10.1.1.0/24',
+        azure: 'The source is a workload in the Spoke A application subnet.',
+        control: 'Spoke A app subnet · 10.1.0.0/24',
         status: 'start',
       },
       {
         node: 'dns',
+        from: 'appA',
+        flow: 'lookup',
         title: 'Resolve the destination',
-        plain: 'Before leaving, the app checks the address book for the database location.',
-        azure: 'Private DNS resolves the private endpoint to a private IP before the network flow begins.',
-        control: 'privatelink.database… → 10.2.1.4',
+        plain: 'Before the connection starts, the app asks the address book where the database lives.',
+        azure: 'A separate DNS query resolves the private database name. The application packet has not moved yet.',
+        control: 'payments-db.internal.contoso.com → 10.2.1.4',
         status: 'allow',
       },
       {
         node: 'nsgA',
+        from: 'appA',
         title: 'Street guard waves it out',
         plain: 'The guard on this street allows traffic heading for the checkpoint.',
-        azure: 'NSG outbound rule permits 1433 towards the hub range.',
-        control: 'NSG allow · dst 10.0.0.0/16 : 1433',
+        azure: 'The source subnet NSG permits TCP 1433 to the destination spoke range.',
+        control: 'NSG allow · dst 10.2.0.0/16 : 1433',
         status: 'allow',
       },
       {
         node: 'firewall',
         title: 'Everything meets at the checkpoint',
-        plain: 'Traffic between campuses always goes through the city checkpoint first.',
-        azure: 'A UDR forces the subnet default route to the firewall, which applies the network rule.',
-        control: 'UDR 0.0.0.0/0 → firewall · allow A→B:1433',
+        plain: 'This approved cross-campus connection is sent through the shared checkpoint.',
+        azure: 'A specific UDR overrides the peering route. Azure Firewall evaluates a network rule and preserves the private source by default.',
+        control: 'UDR 10.2.0.0/16 → firewall · allow A→B:1433',
         status: 'allow',
       },
       {
         node: 'nsgB',
         title: 'Guard at the destination',
         plain: 'The guard on the far street checks who is arriving before letting it in.',
-        azure: 'NSG inbound rule accepts 1433, but only from the hub range.',
-        control: 'NSG allow · src 10.0.0.0/16 : 1433',
+        azure: 'The destination NSG sees the original private source and permits only the application subnet on TCP 1433.',
+        control: 'NSG allow · src 10.1.0.0/24 : 1433',
         status: 'allow',
       },
       {
         node: 'dataB',
         title: 'Arrived',
-        plain: 'The database answers, and the reply follows exactly the same road back.',
-        azure: 'The private endpoint accepts the connection. Both the firewall and the NSGs logged the flow.',
-        control: 'Private endpoint · flow logged end to end',
+        plain: 'The database accepts the connection, then the reply takes the controlled road back.',
+        azure: 'The listener and data-plane identity authorize the request. A matching Spoke B route keeps the return path symmetric.',
+        control: 'Return UDR 10.1.0.0/20 → firewall',
         status: 'allow',
       },
     ],
@@ -173,7 +188,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'hybrid',
     label: 'On-prem → app',
-    summary: 'Hybrid: the corporate network enters through one inspected gate.',
+    summary: 'Hybrid: one valid design routes private corporate traffic through hub inspection.',
     hops: [
       {
         node: 'onprem',
@@ -195,15 +210,15 @@ export const SCENARIOS: Scenario[] = [
         node: 'firewall',
         title: 'Even trusted visitors are inspected',
         plain: 'Coming in through the gate does not skip the checkpoint.',
-        azure: 'The gateway route table sends incoming traffic to the firewall before any spoke.',
-        control: 'Gateway UDR → Azure Firewall',
+        azure: 'Hub route tables and gateway propagation are designed so the path crosses Azure Firewall in both directions.',
+        control: 'Hub routing · gateway ↔ firewall ↔ spoke',
         status: 'allow',
       },
       {
         node: 'nsgA',
         title: 'Street guard confirms',
         plain: 'The guard checks that this street accepts visitors from the office.',
-        azure: 'NSG allows the on-premises range on 443 and nothing else.',
+        azure: 'The workload subnet NSG permits the approved on-premises range on TCP 443.',
         control: 'NSG allow · src 192.168.0.0/16 : 443',
         status: 'allow',
       },
@@ -211,8 +226,8 @@ export const SCENARIOS: Scenario[] = [
         node: 'appA',
         title: 'Reaches the app',
         plain: 'The user gets the app, and it was never exposed to the internet to do it.',
-        azure: 'No public IP on the workload. The path is private, inspected and logged.',
-        control: 'Private, inspected, logged',
+        azure: 'The workload has no public IP. Firewall diagnostics and VNet flow logs provide evidence when enabled.',
+        control: 'Private path · symmetric routes · diagnostics',
         status: 'allow',
       },
     ],
@@ -220,7 +235,7 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'egress',
     label: 'App → internet',
-    summary: 'Egress: the whole estate leaves by one known address.',
+    summary: 'Egress: a regional workload leaves through an approved, observable address set.',
     hops: [
       {
         node: 'appA',
@@ -234,8 +249,8 @@ export const SCENARIOS: Scenario[] = [
         node: 'nsgA',
         title: 'Guard points it inward',
         plain: 'The guard lets it head for the checkpoint, not straight out of town.',
-        azure: 'The NSG allows outbound 443, and the UDR keeps the traffic inside the network.',
-        control: 'NSG allow 443 · UDR → firewall',
+        azure: 'The NSG permits outbound HTTPS. A default UDR on the private subnet selects Azure Firewall as the next hop.',
+        control: 'NSG allow 443 · UDR 0.0.0.0/0 → firewall',
         status: 'allow',
       },
       {
@@ -250,39 +265,78 @@ export const SCENARIOS: Scenario[] = [
         node: 'internet',
         title: 'Out to the world',
         plain: 'The partner sees one predictable address for the entire company.',
-        azure: 'A stable SNAT address, full egress logging, and no rogue public IPs on workloads.',
-        control: 'Fixed egress IP · no public IPs on workloads',
+        azure: 'Azure Firewall uses its public IP or prefix for SNAT. Diagnostic logs record the decision when configured.',
+        control: 'Approved egress IP set · no workload public IP',
+        status: 'allow',
+      },
+    ],
+  },
+  {
+    id: 'ingress',
+    label: 'Internet → app',
+    summary: 'Ingress: one valid pattern terminates and filters web traffic before the workload.',
+    hops: [
+      {
+        node: 'internet',
+        title: 'A customer opens the application',
+        plain: 'A visitor approaches the only published entrance for this building.',
+        azure: 'An internet client starts an HTTPS connection to the application endpoint.',
+        control: 'HTTPS · public application endpoint',
+        status: 'start',
+      },
+      {
+        node: 'appGateway',
+        title: 'The web checkpoint inspects the request',
+        plain: 'The entrance checks the request before it is allowed near the building.',
+        azure: 'Application Gateway v2 terminates HTTPS and its WAF policy evaluates Layer 7 threats.',
+        control: 'App Gateway v2 · WAF policy · TLS',
+        status: 'allow',
+      },
+      {
+        node: 'nsgA',
+        title: 'Only the web tier can enter',
+        plain: 'The street guard accepts visitors only from the approved checkpoint.',
+        azure: 'The workload NSG allows the dedicated Application Gateway subnet to the backend port.',
+        control: 'NSG allow · src 10.1.4.0/24 : 443',
+        status: 'allow',
+      },
+      {
+        node: 'appA',
+        title: 'The private workload receives the request',
+        plain: 'The visitor reaches the building without a public door on the workload itself.',
+        azure: 'The backend uses a private address. Health probes, certificates and application authentication still need separate design.',
+        control: 'Private backend · WAF logs · app authentication',
         status: 'allow',
       },
     ],
   },
   {
     id: 'blocked',
-    label: 'Blocked shortcut',
-    summary: 'What a bypass actually costs: nothing central saw it.',
+    label: 'Denied egress',
+    summary: 'Denied egress: an unapproved destination stops at the central policy point.',
     hops: [
       {
         node: 'appA',
-        title: 'A team takes a shortcut',
-        plain: 'A team peers their campus straight to another one to save a hop.',
-        azure: 'Direct spoke-to-spoke peering, deliberately bypassing the hub.',
-        control: 'Spoke A ⇄ Spoke B peering',
+        title: 'A workload calls an unknown service',
+        plain: 'The building tries to send data to an address that is not on the approved list.',
+        azure: 'A workload starts outbound HTTPS to an unapproved FQDN.',
+        control: 'Outbound 443 · unknown.example',
         status: 'start',
       },
       {
         node: 'nsgA',
-        title: 'The local guard sees nothing wrong',
-        plain: 'The guard on this street only knows its own street rules.',
-        azure: 'The NSG allows the outbound flow, but an NSG is not a substitute for central inspection.',
-        control: 'NSG allow · outbound permitted',
+        title: 'The local guard permits the route',
+        plain: 'The street guard allows HTTPS to leave, but does not understand the service name.',
+        azure: 'The NSG permits Layer 4 traffic. The default UDR still sends it to Azure Firewall.',
+        control: 'NSG allow 443 · UDR → firewall',
         status: 'allow',
       },
       {
-        node: 'nsgB',
-        title: 'Refused at the destination',
-        plain: 'The far street does not recognise traffic that never passed the checkpoint.',
-        azure: 'The inbound NSG denies anything that did not arrive from the hub range, and nothing was centrally inspected or logged along the way.',
-        control: 'NSG deny · src not in 10.0.0.0/16',
+        node: 'firewall',
+        title: 'Central policy refuses the destination',
+        plain: 'The city checkpoint has no approved route for this destination, so the trip ends here.',
+        azure: 'No application rule allows the FQDN. Azure Firewall denies and logs the connection attempt.',
+        control: 'Default deny · log decision and rule collection',
         status: 'deny',
       },
     ],

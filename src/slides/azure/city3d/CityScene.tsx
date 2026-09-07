@@ -359,6 +359,38 @@ function Packet({
   );
 }
 
+/** A lightweight signal used for DNS preflight so the packet itself stays at the source. */
+function LookupSignal({
+  curve,
+  progressRef,
+  color,
+}: {
+  curve: THREE.Curve<THREE.Vector3> | null;
+  progressRef: React.MutableRefObject<number>;
+  color: string;
+}) {
+  const ref = useRef<THREE.Group>(null);
+  const scratch = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame(() => {
+    if (!ref.current || !curve) return;
+    curve.getPointAt(THREE.MathUtils.clamp(progressRef.current, 0, 1), scratch);
+    ref.current.position.copy(scratch);
+  });
+
+  if (!curve) return null;
+
+  return (
+    <group ref={ref}>
+      <mesh renderOrder={5}>
+        <sphereGeometry args={[0.36, 20, 14]} />
+        <meshBasicMaterial color={color} depthWrite={false} />
+      </mesh>
+      <pointLight color={color} intensity={1.8} distance={6} />
+    </group>
+  );
+}
+
 /* =========================================================== Camera ===== */
 
 /**
@@ -442,17 +474,26 @@ function SceneContents({ hops, step, progressRef, travelling, onSelectHop, lockO
   const nodes = useMemo(() => hops.map((h) => NODES[h.node]), [hops]);
 
   const legs = useMemo(
-    () => nodes.slice(0, -1).map((n, i) => legCurve(n, nodes[i + 1], routeLift)),
-    [nodes, routeLift]
+    () =>
+      hops.map((hop, i) => {
+        if (i === 0) return null;
+        const from = NODES[hop.from ?? hops[i - 1].node];
+        const to = NODES[hop.node];
+        return { curve: legCurve(from, to, routeLift), flow: hop.flow ?? 'traffic' };
+      }),
+    [hops, routeLift]
   );
 
-  // The leg currently being flown: from step-1 to step.
-  const activeLeg = travelling && step > 0 ? legs[step - 1] ?? null : null;
+  // Each hop can name its own source. This keeps DNS lookup off the payload path.
+  const activeRoute = travelling && step > 0 ? legs[step] ?? null : null;
+  const activeLeg = activeRoute?.curve ?? null;
+  const activeFlow = hops[step]?.flow ?? 'traffic';
 
   const restPoint = useMemo(() => {
-    const n = nodes[step] ?? nodes[0];
+    const hop = hops[step] ?? hops[0];
+    const n = hop.flow === 'lookup' && hop.from ? NODES[hop.from] : NODES[hop.node];
     return new THREE.Vector3(n.pos[0], routeLift, n.pos[2]);
-  }, [nodes, step, routeLift]);
+  }, [hops, step, routeLift]);
 
   const denied = hops[step]?.status === 'deny';
   const packetColor = denied ? palette.error : palette.accent;
@@ -500,15 +541,18 @@ function SceneContents({ hops, step, progressRef, travelling, onSelectHop, lockO
       />
 
       {/* Route: flown legs solid, the leg in progress bright, the rest faint */}
-      {legs.map((curve, i) => {
-        const flown = i < step - (travelling ? 1 : 0);
-        const inFlight = travelling && i === step - 1;
+      {legs.map((leg, i) => {
+        if (!leg) return null;
+        const inFlight = travelling && i === step;
+        const flown = i <= step && !inFlight;
+        const rejected = hops[i]?.status === 'deny' && i <= step;
+        const lookup = leg.flow === 'lookup';
         return (
           <RouteLeg
             key={i}
-            curve={curve}
+            curve={leg.curve}
             color={
-              hops[i + 1]?.status === 'deny'
+              rejected
                 ? palette.error
                 : inFlight
                 ? palette.accent
@@ -516,8 +560,9 @@ function SceneContents({ hops, step, progressRef, travelling, onSelectHop, lockO
                 ? palette.navy
                 : palette.muted
             }
-            opacity={inFlight ? 0.95 : flown ? 0.8 : 0.3}
-            radius={inFlight ? 0.26 : flown ? 0.2 : 0.1}
+            opacity={inFlight ? 0.95 : flown ? (lookup ? 0.58 : 0.8) : 0.22}
+            radius={lookup ? 0.08 : inFlight ? 0.26 : flown ? 0.2 : 0.1}
+            dashed={lookup}
           />
         );
       })}
@@ -535,11 +580,17 @@ function SceneContents({ hops, step, progressRef, travelling, onSelectHop, lockO
       ))}
 
       <Packet
-        curve={activeLeg}
+        curve={activeFlow === 'lookup' ? null : activeLeg}
         progressRef={progressRef}
         restPoint={restPoint}
         color={packetColor}
         positionRef={packetPosition}
+      />
+
+      <LookupSignal
+        curve={activeFlow === 'lookup' ? activeLeg : null}
+        progressRef={progressRef}
+        color={palette.accent}
       />
 
       <CameraDirector

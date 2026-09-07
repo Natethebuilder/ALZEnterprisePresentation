@@ -29,8 +29,8 @@ export function S13EntraAndIdentities() {
         <Kicker>The identity office</Kicker>
         <Title>People get accounts. So do applications.</Title>
         <Lead className="mt-4">
-          Nothing acts in Azure without an identity. Entra ID issues them and proves them,
-          for humans and for workloads alike.
+          Microsoft Entra ID authenticates human and workload identities. Azure RBAC then
+          authorizes control-plane actions and supported data-plane access.
         </Lead>
 
         <div className="mt-4 grid grid-cols-2 gap-8 flex-1">
@@ -53,8 +53,8 @@ export function S13EntraAndIdentities() {
                 compact
                 tone="cloud"
                 icon={<Users className="w-6 h-6" />}
-                label="Grant to groups, never to people"
-                sub="A named individual on a role assignment is a permission nobody finds again."
+                label="Assign workforce access through groups"
+                sub="Group-based roles make joiners, movers, leavers and access reviews manageable."
               />
               <Box
                 compact
@@ -67,8 +67,8 @@ export function S13EntraAndIdentities() {
                 compact
                 tone="light"
                 icon={<Clock className="w-6 h-6" />}
-                label="PIM: elevate, then expire"
-                sub="Standing admin access is what an attacker looks for. Make it a request."
+                label="PIM: eligible, time-bound privilege"
+                sub="Use approval, MFA and expiry for privileged roles where the risk justifies it."
               />
             </div>
           </div>
@@ -81,19 +81,19 @@ export function S13EntraAndIdentities() {
             </div>
 
             <p className="text-lg text-slide-gray-700 leading-snug mb-4">
-              An app needs to open doors too. A managed identity is an account the platform
-              issues to the workload itself, with no password to store, leak or rotate.
+              A managed identity lets supported Azure resources request Entra tokens without
+              developers storing or rotating an application credential.
             </p>
 
             <div className="flex flex-col items-center gap-2">
               <Box compact tone="navy" icon={<Server className="w-6 h-6" />} label="Workload" sub="VM, App Service, Function, container" className="w-full" />
               <ArrowDown />
-              <Box compact tone="light" icon={<Lock className="w-6 h-6" />} label="Key Vault / SQL / Storage" sub="Trusts Entra. No shared secret exists." className="w-full" />
+              <Box compact tone="light" icon={<Lock className="w-6 h-6" />} label="Key Vault / SQL / Storage" sub="Target supports Entra authentication and grants the required data role" className="w-full" />
             </div>
 
             <div className="mt-auto pt-4 flex flex-col gap-2.5">
-              <Box tone="success" compact icon={<CheckCircle2 className="w-5 h-5" />} label="No secret in code, config or pipeline variables" />
-              <Box tone="error" compact icon={<XCircle className="w-5 h-5" />} label="Replaces connection strings that carry a password" />
+              <Box tone="success" compact icon={<CheckCircle2 className="w-5 h-5" />} label="System-assigned follows one resource; user-assigned can be reused" />
+              <Box tone="error" compact icon={<XCircle className="w-5 h-5" />} label="Use credentials only when the target cannot use Entra authentication" />
             </div>
           </div>
         </div>
@@ -119,7 +119,7 @@ const SCOPES = [
     detail: 'Connectivity',
     icon: <Building2 className="w-6 h-6" />,
     reaches: ['rg', 'res'],
-    note: 'The usual home for a platform team’s working access: broad enough to operate the environment, bounded by the property fence.',
+    note: 'A common scope for a platform capability or workload team when it owns the whole subscription. It is broad enough to operate, but still bounded.',
   },
   {
     key: 'rg',
@@ -127,7 +127,7 @@ const SCOPES = [
     detail: 'hub-firewall',
     icon: <FolderTree className="w-6 h-6" />,
     reaches: ['res'],
-    note: 'Where an application team should normally live. They can build everything in their own room and nothing outside it.',
+    note: 'A good scope when a team owns only part of a subscription. Prefer the smallest scope that still makes routine work practical.',
   },
   {
     key: 'res',
@@ -158,7 +158,7 @@ export function S14RBAC() {
 
         {/* The assignment */}
         <div className="mt-6 flex items-center justify-center gap-3">
-          <Box tone="cloud" icon={<Users className="w-6 h-6" />} label="WHO" sub="A group, never a person" />
+          <Box tone="cloud" icon={<Users className="w-6 h-6" />} label="WHO" sub="A workforce or workload identity" />
           <ArrowRight />
           <Box tone="cloud" icon={<KeyRound className="w-6 h-6" />} label="WHICH ROLE" sub="A named set of actions" />
           <ArrowRight />
@@ -221,9 +221,9 @@ export function S14RBAC() {
             </div>
 
             <p className="text-xl text-slide-gray-600 leading-snug">
-              Permissions only ever flow <span className="font-semibold text-slide-primary">down</span>,
-              and they only ever <span className="font-semibold text-slide-primary">add</span>. There is
-              no "deny this one thing" here, that is what Policy is for.
+              Role assignments inherit down and normally accumulate. Effective access also
+              evaluates deny assignments and supported role-assignment conditions. Policy
+              governs resource configuration, not a person's job function.
             </p>
           </div>
         </div>
@@ -258,7 +258,7 @@ export function S15RBACvsPolicy() {
             <div className="flex flex-col gap-3 flex-1">
               <Box tone="light" compact label="Controls actions" sub="create, read, update, delete" />
               <Box tone="light" compact label="Attached to an identity" sub="a group, a service principal, a managed identity" />
-              <Box tone="light" compact label="Only ever grants" sub="It permits; it cannot forbid a configuration" />
+              <Box tone="light" compact label="Evaluation has more than grants" sub="Applicable deny assignments and supported conditions are also checked" />
               <Box tone="light" compact label="An Owner is still bound by Policy" sub="Full permission does not mean anything may exist" />
             </div>
           </div>
@@ -272,7 +272,7 @@ export function S15RBACvsPolicy() {
             </p>
             <div className="flex flex-col gap-3 flex-1">
               <Box tone="light" compact label="Controls configuration" sub="regions, SKUs, tags, encryption, public access" />
-              <Box tone="light" compact label="Attached to a scope" sub="management group, subscription, resource group" />
+              <Box tone="light" compact label="Assigned at a scope" sub="management group, subscription, resource group or resource" />
               <Box tone="light" compact label="Can deny, audit or repair" sub="It is a guardrail, not a permission" />
               <Box tone="light" compact label="It stops an Owner too" sub="Which is exactly why it is worth having" />
             </div>
@@ -281,8 +281,8 @@ export function S15RBACvsPolicy() {
 
         <div className="mt-5 rounded border-2 border-slide-gray-300 bg-white px-6 py-3">
           <p className="text-lg text-slide-gray-800">
-            The test: <span className="font-semibold">“Could a well-meaning Owner still do this?”</span>{' '}
-            If yes, and it would be a problem, you needed a policy, not a smaller role.
+            Use RBAC when the question is whether an identity may perform an action. Use
+            Policy when the question is whether a resource state is compliant.
           </p>
         </div>
       </Body>

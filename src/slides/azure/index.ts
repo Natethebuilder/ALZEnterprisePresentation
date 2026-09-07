@@ -32,7 +32,7 @@ export interface AzureSlide {
  */
 export const azureSlides: AzureSlide[] = [
   { component: S01Title,             name: 'Title',                     template: 'title' },
-  { component: S02HowToRead,         name: 'How to read this deck',     template: 'intro' },
+  { component: S02HowToRead,         name: 'Platform and workload landing zones', template: 'intro' },
   { component: S03Metaphor,          name: 'Azure is a city',           template: 'grid', interactive: true },
 
   { component: S04SectionHierarchy,  name: '§ Where things live',       template: 'section' },
@@ -42,7 +42,7 @@ export const azureSlides: AzureSlide[] = [
   { component: S07VNetSubnets,       name: 'VNet & subnets',            template: 'diagram' },
   { component: S08NSGvsFirewall,     name: 'NSG vs Azure Firewall',     template: 'comparison' },
   { component: S09RoutesDNS,         name: 'Routes & DNS',              template: 'comparison' },
-  { component: S10HubSpoke,          name: 'Hub and spoke',             template: 'diagram', interactive: true },
+  { component: S10HubSpoke,          name: 'Enterprise topology',       template: 'diagram', interactive: true },
   { component: SlideCityWalkthrough, name: 'City walkthrough (3D)',     template: 'interactive', interactive: true },
 
   { component: S12SectionIdentity,   name: '§ Who controls what',       template: 'section' },
@@ -52,7 +52,7 @@ export const azureSlides: AzureSlide[] = [
 
   { component: S16SectionGovernance, name: '§ Governance & operations', template: 'section' },
   { component: S17Policy,            name: 'Azure Policy effects',      template: 'explorer', interactive: true },
-  { component: S18Ownership,         name: 'Who owns what',             template: 'table' },
+  { component: S18Ownership,         name: 'Ownership contract',        template: 'table' },
   { component: S19OperatingModel,    name: 'Operating model',           template: 'spectrum', interactive: true },
   { component: S20Roadmap,           name: 'Roadmap & maturity',        template: 'timeline', interactive: true },
   { component: S21Discovery,         name: 'Discovery questions',       template: 'list' },

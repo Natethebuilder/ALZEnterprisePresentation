@@ -5,7 +5,7 @@ import {
 } from './components';
 import type { Tone } from './components';
 import {
-  Layers, Landmark, Receipt, FolderTree, Server, Cpu, Database, Cloud, Users,
+  Layers, Landmark, Receipt, FolderTree, Server, Cpu, Database, Cloud, Users, Building2,
   ShieldCheck, Network, Map, Compass, Flame, BookOpen, Lock,
 } from 'lucide-react';
 
@@ -56,42 +56,70 @@ export function S01Title() {
 /* ============================================================== 02 ====== */
 
 export function S02HowToRead() {
-  const audiences = [
-    { icon: <Compass className="w-7 h-7" />, who: 'Decision makers', why: 'The operating model, and where the value actually lands.' },
-    { icon: <Network className="w-7 h-7" />, who: 'Architects & engineers', why: 'The technical foundations, and the trade-offs behind them.' },
-    { icon: <ShieldCheck className="w-7 h-7" />, who: 'Security & governance', why: 'Where each boundary is enforced, and who owns it.' },
-    { icon: <Users className="w-7 h-7" />, who: 'Platform & app teams', why: 'Who does what, and exactly where self-service begins.' },
+  const designAreas = [
+    { t: 'Billing and tenant', d: 'Commercial and directory alignment' },
+    { t: 'Identity and access', d: 'Authentication and authorization' },
+    { t: 'Resource organization', d: 'Management groups and subscriptions' },
+    { t: 'Network connectivity', d: 'Topology, routing, DNS and ingress' },
+    { t: 'Security', d: 'Protection, posture and response' },
+    { t: 'Management', d: 'Observability, operations and recovery' },
+    { t: 'Governance', d: 'Policy, cost and compliance' },
+    { t: 'Automation and DevOps', d: 'Platform lifecycle through code' },
   ];
 
   return (
-    <AZSlide index={2} kicker="How to read this deck">
+    <AZSlide index={2} kicker="The operating model">
       <Body>
-        <Kicker>One story, two depths</Kicker>
-        <Title>Every idea arrives twice.</Title>
-        <Lead className="mt-5">
-          Each concept is introduced as part of the city, then named in Azure terms
-          underneath. A non-technical stakeholder can follow the whole arc; an architect
-          still gets the mechanism.
+        <Kicker>Start with the definition</Kicker>
+        <Title>One platform foundation. Many workload landing zones.</Title>
+        <Lead className="mt-4">
+          An Azure landing zone is a proven, flexible architecture for governing, securing
+          and scaling a multi-subscription environment. It joins technology with ownership,
+          guardrails and a repeatable way to give teams an Azure environment.
         </Lead>
 
-        <div className="mt-10 grid grid-cols-4 gap-6">
-          {audiences.map((a) => (
-            <Box key={a.who} tone="light" icon={a.icon} label={a.who} sub={a.why} className="h-full" />
+        <div className="mt-7 grid grid-cols-2 gap-8">
+          <div className="rounded border-2 border-slide-primary bg-slide-primary p-7 text-white">
+            <div className="flex items-center gap-3">
+              <Landmark className="w-8 h-8 text-slide-accent-light" />
+              <div className="text-3xl font-semibold">Platform landing zone</div>
+            </div>
+            <p className="mt-3 text-xl text-white/75 leading-snug">
+              The shared foundation, normally one per Microsoft Entra tenant, run as a
+              product by a central platform team.
+            </p>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              <Box tone="navy" compact label="Governance" sub="Hierarchy and policy" className="border-white/25" />
+              <Box tone="navy" compact label="Shared services" sub="Only where they add value" className="border-white/25" />
+              <Box tone="navy" compact label="Distribution" sub="Subscription vending" className="border-white/25" />
+            </div>
+          </div>
+
+          <div className="rounded border-2 border-slide-accent bg-slide-accent-muted p-7">
+            <div className="flex items-center gap-3">
+              <Building2 className="w-8 h-8 text-slide-accent" />
+              <div className="text-3xl font-semibold text-slide-primary">Application landing zones</div>
+            </div>
+            <p className="mt-3 text-xl text-slide-gray-700 leading-snug">
+              The environments where workload teams build and operate. Each workload can
+              span development, test and production subscriptions inside platform guardrails.
+            </p>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              <Box tone="light" compact label="Workload owned" sub="End-to-end lifecycle" />
+              <Box tone="light" compact label="Policy governed" sub="A consistent minimum" />
+              <Box tone="light" compact label="Fit for purpose" sub="One or more subscriptions" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-7 grid grid-cols-4 gap-3">
+          {designAreas.map((area) => (
+            <div key={area.t} className="rounded border-2 border-slide-gray-200 bg-white px-4 py-3">
+              <div className="text-lg font-semibold text-slide-primary leading-tight">{area.t}</div>
+              <div className="text-base text-slide-gray-600 leading-snug mt-0.5">{area.d}</div>
+            </div>
           ))}
         </div>
-
-        <div className="mt-10 flex items-center gap-4">
-          <Chip tone="cloud">The city</Chip>
-          <ArrowRight />
-          <Chip tone="navy">The Azure service</Chip>
-          <ArrowRight />
-          <Chip tone="success">Who owns it, and what breaks without it</Chip>
-        </div>
-
-        <p className="mt-8 text-xl text-slide-gray-600">
-          Four slides are interactive: the hierarchy, the city walkthrough, and both
-          governance builds. Look for the step controls and click through them.
-        </p>
       </Body>
     </AZSlide>
   );
@@ -220,12 +248,12 @@ const TIERS: Tier[] = [
     city: 'The city boundary',
     icon: <Landmark className="w-7 h-7" />,
     tone: 'navy',
-    what: 'Your organisation in Azure: the outermost boundary, and the root of identity and billing.',
-    purpose: 'It is the identity boundary. Everything that can authenticate, and everything that can be paid for, lives inside exactly one of these.',
+    what: 'The Microsoft Entra directory that Azure subscriptions trust for identities and access.',
+    purpose: 'It is the main identity boundary for the platform. Billing offers are associated with subscriptions, but billing and tenant structure are separate design decisions.',
     practice: [
-      { t: 'One tenant, almost always', d: 'A second tenant means a second identity estate to run. Reach for it only for a genuine legal or acquisition boundary.' },
-      { t: 'Holds identities and the billing root', d: 'Users, groups, service principals, and the agreement everything is charged against.' },
-      { t: 'Backed by Microsoft Entra ID', d: 'yourorg.onmicrosoft.com, the directory every access decision is checked against.' },
+      { t: 'Usually one platform landing zone per tenant', d: 'A second tenant adds another identity, policy and operations boundary. Use it only for a clear requirement.' },
+      { t: 'Keep billing and identity concepts separate', d: 'A subscription belongs to one tenant at a time, while billing arrangements can span tenants.' },
+      { t: 'Plan privileged and emergency access', d: 'Protect admin paths with MFA, Conditional Access, PIM and tested emergency accounts.' },
     ],
   },
   {
@@ -235,11 +263,11 @@ const TIERS: Tier[] = [
     icon: <Layers className="w-7 h-7" />,
     tone: 'cloud',
     what: 'A tree of containers above subscriptions, where policy and access are applied once and inherited by everything beneath.',
-    purpose: 'This is the only layer that lets you govern at scale. A rule set here reaches every subscription below it without per-subscription work.',
+    purpose: 'This layer lets policy and selected platform access apply consistently across many subscriptions.',
     practice: [
-      { t: 'Shape it around governance, not the org chart', d: 'Platform / Landing zones / Sandbox / Decommissioned survives a reorg. A tree named after departments does not.' },
-      { t: 'Keep it shallow, three or four levels', d: 'Every extra level is another place a permission can hide.' },
-      { t: 'Changing it later is expensive', d: 'Moving subscriptions between groups silently changes what applies to them. Get this one roughly right up front.' },
+      { t: 'Group subscriptions that need the same policy', d: 'Platform, Landing zones, Sandbox and Decommissioned are durable patterns. Avoid mirroring a changing org chart.' },
+      { t: 'Keep the hierarchy simple', d: 'Each extra level creates another place to understand inheritance and exceptions.' },
+      { t: 'Use broad RBAC sparingly', d: 'Platform roles can sit here, but workload-team roles normally belong at subscription or resource-group scope.' },
     ],
   },
   {
@@ -248,12 +276,12 @@ const TIERS: Tier[] = [
     city: 'Fenced properties',
     icon: <Receipt className="w-7 h-7" />,
     tone: 'cloud',
-    what: 'The unit of billing, quota and blast radius, and the thing app teams are actually given.',
-    purpose: 'It is the boundary that bounds. Cost, service limits and the damage one mistake can do all stop at its fence.',
+    what: 'A primary unit of management, cost reporting, service limits, policy and access.',
+    purpose: 'It creates a practical boundary for ownership and scale. Workload teams are commonly given one or more subscriptions through vending.',
     practice: [
-      { t: 'One per environment × domain', d: 'payments-prod, payments-dev, hr-prod. Each is separately budgeted, separately limited, separately broken.' },
-      { t: 'It is a scale unit, not a folder', d: 'When a workload approaches a service limit, the answer is another subscription, not a bigger one.' },
-      { t: 'Hand them out by vending, not by ticket', d: 'A new subscription should arrive pre-placed in the right group, pre-peered and pre-governed.' },
+      { t: 'Separate where the boundary earns its keep', d: 'Environment, ownership, policy, risk and service limits determine whether a workload needs more than one subscription.' },
+      { t: 'It is a scale unit, not just a folder', d: 'Many quotas and administrative boundaries are subscription scoped.' },
+      { t: 'Vend a product, not an empty subscription', d: 'Place it correctly and apply the required policy, access, budgets, diagnostics and connectivity inputs.' },
     ],
   },
   {
@@ -262,12 +290,12 @@ const TIERS: Tier[] = [
     city: 'Rooms inside a property',
     icon: <FolderTree className="w-7 h-7" />,
     tone: 'light',
-    what: 'A container for resources that share a lifecycle: deployed together, and deleted together.',
-    purpose: 'It is the unit of deployment and deletion. Getting it wrong is what makes an environment impossible to tear down cleanly.',
+    what: 'A management container for resources that usually share a lifecycle, owner or access pattern.',
+    purpose: 'It gives teams a useful scope for deployment, permissions, locks, tags and lifecycle operations. Deleting it deletes its contained resources.',
     practice: [
-      { t: 'Group by lifecycle, never by type', d: 'A web app with its plan and its storage. Not "all the databases in the company".' },
-      { t: 'Deleting the group deletes the contents', d: 'Which is a feature, if, and only if, the contents really did belong together.' },
-      { t: 'It is also a natural RBAC scope', d: 'Give a team contributor on their room rather than on the whole property.' },
+      { t: 'Prefer shared lifecycle and ownership', d: 'A web app and its supporting resources often belong together. Avoid company-wide groups by resource type.' },
+      { t: 'Treat deletion as a deliberate boundary', d: 'Locks and deployment design should protect resources that must not disappear together.' },
+      { t: 'Use it as a least-privilege scope', d: 'Give a team the access it needs on its resources, not automatically on the entire subscription.' },
     ],
   },
   {
@@ -279,9 +307,9 @@ const TIERS: Tier[] = [
     what: 'The actual workloads: compute, data, storage, networking, secrets.',
     purpose: 'This is the only layer that does any work. Every layer above it exists to make this layer safe by default.',
     practice: [
-      { t: 'Every law above still applies', d: 'A resource obeys the policy on its group, its subscription and every management group above it. That is the whole point of the tree.' },
-      { t: 'Tags are how cost becomes answerable', d: 'CostCentre and Owner, enforced by policy, are what turn a bill into a conversation.' },
-      { t: 'Nothing here should be clicked into existence', d: 'If it was not deployed from code, nobody can recreate it.' },
+      { t: 'Inherited controls still apply', d: 'Policy and role assignments from parent scopes are evaluated here, alongside more specific assignments and exemptions.' },
+      { t: 'Metadata makes operations answerable', d: 'Owner, application and cost tags support accountability when they are governed consistently.' },
+      { t: 'Deploy repeatably through code', d: 'Infrastructure as Code makes review, testing, recovery and change history possible.' },
     ],
   },
 ];
@@ -336,34 +364,34 @@ export function S05Hierarchy() {
         </div>
 
         {/* The open layer */}
-        <div className="mt-6 h-[412px] grid grid-cols-[1fr_1.25fr] gap-8">
-          <div className="rounded border-2 border-slide-accent bg-slide-accent-muted p-7 flex flex-col">
+        <div className="mt-6 h-[370px] grid grid-cols-[1fr_1.25fr] gap-8">
+          <div className="rounded border-2 border-slide-accent bg-slide-accent-muted p-6 flex flex-col">
             <Chip tone="navy" className="self-start">{tier.azure}</Chip>
-            <p className="mt-5 text-3xl font-semibold text-slide-primary leading-tight">
+            <p className="mt-4 text-2xl font-semibold text-slide-primary leading-tight">
               {tier.what}
             </p>
-            <div className="mt-auto pt-6 border-t-2 border-slide-accent/40">
-              <div className="text-lg font-semibold uppercase tracking-[0.14em] text-slide-gray-600">
+            <div className="mt-auto pt-4 border-t-2 border-slide-accent/40">
+              <div className="text-base font-semibold uppercase tracking-[0.14em] text-slide-gray-600">
                 Why this layer exists
               </div>
-              <p className="mt-2 text-xl text-slide-gray-700 leading-snug">{tier.purpose}</p>
+              <p className="mt-2 text-lg text-slide-gray-700 leading-snug">{tier.purpose}</p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 justify-center">
+          <div className="flex flex-col gap-3 justify-center">
             {tier.practice.map((p, i) => {
               const Icon = TIER_ICONS[i % TIER_ICONS.length];
               return (
                 <div
                   key={p.t}
-                  className="flex items-start gap-4 rounded border-2 border-slide-gray-200 bg-white px-6 py-4"
+                  className="flex items-start gap-3 rounded border-2 border-slide-gray-200 bg-white px-5 py-3"
                 >
                   <div className="rounded-sm bg-slide-accent-muted p-2.5 text-slide-primary shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xl font-semibold text-slide-gray-900 leading-tight">{p.t}</div>
-                    <div className="text-lg text-slide-gray-600 leading-snug mt-1">{p.d}</div>
+                    <div className="text-lg font-semibold text-slide-gray-900 leading-tight">{p.t}</div>
+                    <div className="text-base text-slide-gray-600 leading-snug mt-1">{p.d}</div>
                   </div>
                 </div>
               );
@@ -371,9 +399,9 @@ export function S05Hierarchy() {
           </div>
         </div>
 
-        <p className="mt-24 text-lg text-slide-gray-600">
-          Access and policy flow <span className="font-semibold text-slide-primary">downwards only</span>.
-          That single rule is what makes the tree worth having.
+        <p className="mt-3 text-base text-slide-gray-600">
+          Role and policy assignments inherit to child scopes. Lower scopes can add assignments,
+          and Policy can use documented exemptions, so effective control is the combined result.
         </p>
       </Body>
     </AZSlide>

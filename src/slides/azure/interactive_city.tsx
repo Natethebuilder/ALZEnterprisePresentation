@@ -11,8 +11,9 @@ const TRAVEL_MS = 1100;
  * The interactive city walkthrough.
  *
  * Nothing here advances on its own. The packet moves exactly once per click,
- * along exactly one leg, and then stops, so the slide can be talked over at
- * whatever pace the room needs. You can step with the buttons, jump to any hop
+ * along exactly one traffic leg, and then stops, so the slide can be talked over at
+ * whatever pace the room needs. DNS lookup is shown as a separate dotted signal.
+ * You can step with the buttons, jump to any decision
  * in the strip, or click a marker in the city itself.
  */
 export function SlideCityWalkthrough() {
@@ -146,7 +147,7 @@ export function SlideCityWalkthrough() {
 
           <div className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 rounded-sm bg-white/92 border-2 border-slide-gray-200 text-base font-medium text-slide-gray-700">
             <MousePointerClick className="w-4 h-4 text-slide-accent" />
-            Click a marker to jump there · drag to orbit · scroll to zoom
+            Click a marker to jump · drag to orbit · scroll to zoom
           </div>
 
           <button
@@ -163,8 +164,12 @@ export function SlideCityWalkthrough() {
             {lockOnPacket ? 'Explore city' : 'Lock on packet'}
           </button>
 
-          <div className="absolute bottom-4 left-4 px-4 py-2 rounded-sm bg-white/92 border-2 border-slide-gray-200 text-base font-medium text-slide-gray-700">
+          <div className="absolute bottom-4 left-4 max-w-[52%] px-4 py-2 rounded-sm bg-white/92 border-2 border-slide-gray-200 text-base font-medium leading-tight text-slide-gray-700">
             {scenario.summary}
+          </div>
+
+          <div className="absolute bottom-4 right-4 px-3 py-2 rounded-sm bg-white/92 border-2 border-slide-gray-200 text-base font-medium text-slide-gray-600">
+            Dotted: DNS lookup · Solid: traffic
           </div>
         </div>
 
@@ -172,11 +177,11 @@ export function SlideCityWalkthrough() {
         <div className="w-[640px] flex flex-col">
           <Kicker>Walk the city</Kicker>
           <h2 className="font-display text-4xl font-semibold tracking-tight leading-[1.08]">
-            Follow one packet, one hop at a time.
+            Trace one connection, one decision at a time.
           </h2>
 
           {/* Scenario picker */}
-          <div className="mt-5 grid grid-cols-2 gap-2">
+          <div className="mt-5 grid grid-cols-3 gap-2">
             {SCENARIOS.map((s) => (
               <button
                 key={s.id}
@@ -209,7 +214,7 @@ export function SlideCityWalkthrough() {
               disabled={step >= hops.length - 1}
               className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-slide-accent text-white text-lg font-semibold disabled:opacity-35 hover:bg-slide-primary-light transition-colors"
             >
-              Next hop <ArrowRight className="w-5 h-5" />
+              Next decision <ArrowRight className="w-5 h-5" />
             </button>
             <button
               type="button"
@@ -227,7 +232,7 @@ export function SlideCityWalkthrough() {
 
           {/* The hop being discussed */}
           <div
-            className={`mt-4 shrink-0 rounded-sm border-2 px-6 py-4 h-[368px] flex flex-col overflow-hidden transition-colors ${
+            className={`mt-4 shrink-0 rounded-sm border-2 px-6 py-4 h-[350px] flex flex-col overflow-hidden transition-colors ${
               denied
                 ? 'bg-[hsl(var(--slide-error)/0.07)] border-[hsl(var(--slide-error)/0.55)]'
                 : 'bg-slide-accent-muted border-slide-accent'
