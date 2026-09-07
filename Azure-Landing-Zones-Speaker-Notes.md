@@ -842,3 +842,4 @@ Read these in order:
 12. [AZ-305: Design identity, governance and monitor solutions](https://learn.microsoft.com/en-us/training/paths/design-identity-governance-monitor-solutions/)
 
 Use the [AZ-305 study guide](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-305) as a skills checklist for the broader solution architect role. It covers identity, governance, monitoring, business continuity, infrastructure and network design beyond landing zones.
+
